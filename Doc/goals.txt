@@ -1,0 +1,4 @@
+- show how fast a spaceship would move through the solar system at the speed of light
+- make the rotation of earth and moon visible
+- show how the seasons affect daylight at northern and southern hemisphere
+- make the size of the milky way visible
