@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class Game : MonoBehaviour
@@ -18,6 +19,7 @@ public class Game : MonoBehaviour
     [SerializeField] TMP_Dropdown dropdownSpaceshipSpeed;
     [SerializeField] TMP_Dropdown dropdownSpaceshipDestination1;
     [SerializeField] TMP_Dropdown dropdownSpaceshipDestination2;
+    [SerializeField] TextMeshProUGUI textMessage;
     [SerializeField] TextMeshProUGUI buttonPlayText;
     [SerializeField] TextMeshProUGUI textTime;
     [SerializeField] Toggle toggleCameraFollow;
@@ -31,7 +33,8 @@ public class Game : MonoBehaviour
     [SerializeField] GameObject poles;
     [SerializeField] GameObject pfLabel;
     [SerializeField] Spaceship spaceShip;
-    [SerializeField] GameInput gameInput;
+    [SerializeField] Earth earth;
+    [SerializeField] CameraController cameraController;
     [SerializeField] CinemachineVirtualCamera vmCamera;
     GameObject cameraFollowObject;
     private int scaleFactor = 1;
@@ -44,6 +47,8 @@ public class Game : MonoBehaviour
     public CinemachineVirtualCamera VMCamera { get => vmCamera; set => vmCamera = value; }
     public GameObject CameraFollowObject { get => cameraFollowObject; set => cameraFollowObject = value; }
     public int ScaleFactor { get => scaleFactor; set => scaleFactor = value; }
+    public Spaceship SpaceShip { get => spaceShip; set => spaceShip = value; }
+    public Earth Earth { get => earth; set => earth = value; }
 
     private float simulationTime;    // in years
     private bool playing = true;
@@ -57,6 +62,7 @@ public class Game : MonoBehaviour
     {
         Instance = this;
         canvasInfo.enabled = false;
+        textMessage.text = "";
         foreach (var spaceObject in spaceObjects)
         {
             dropdownCameraFollow.options.Add(new TMP_Dropdown.OptionData() { text = spaceObject.name });
@@ -86,6 +92,8 @@ public class Game : MonoBehaviour
         spaceShip.NextSpaceshipDestination();
         OnToggleCameraLockOnObject();
         OnDropdownSpaceshipSpeedChanged();
+        togglePoles.isOn = poles.activeSelf;
+        toggleShowLabels.isOn = Settings.ShowLabels;
     }
 
     public void OnDropdownDestination1Changed()
@@ -124,7 +132,7 @@ public class Game : MonoBehaviour
 
     public void OnDropdownCameraFollowChanged()
     {
-        gameInput.ChangeFollowObject(Array.Find(spaceObjects, o => o.name.Equals(dropdownCameraFollow.options[dropdownCameraFollow.value].text)));
+        cameraController.ChangeFollowObject(Array.Find(spaceObjects, o => o.name.Equals(dropdownCameraFollow.options[dropdownCameraFollow.value].text)));
         toggleCameraLockOnObject.enabled = true;
         toggleCameraFollow.isOn = true;
     }
@@ -208,7 +216,7 @@ public class Game : MonoBehaviour
     {
         if (!toggleCameraFollow.isOn)
         {
-            gameInput.ChangeFollowObject(null);
+            cameraController.ChangeFollowObject(null);
             toggleCameraLockOnObject.enabled = false;
             toggleCameraLockOnObject.isOn = false;
         }
@@ -220,7 +228,7 @@ public class Game : MonoBehaviour
 
     public void OnToggleCameraLockOnObject()
     {
-        gameInput.SetLockOnObject(toggleCameraLockOnObject.isOn);
+        cameraController.SetLockOnObject(toggleCameraLockOnObject.isOn);
     }
 
     public void OnToggleTrailsChanged()
@@ -273,15 +281,21 @@ public class Game : MonoBehaviour
         return time.ToString(CultureInfo.InvariantCulture);
     }
 
+    public void FixedUpdate()
+    {
+        textMessage.text = "spaceship: " + spaceShip.GetProgress() + "%";
+    }
+
     public void Update()
     {
+        float cameraDistanceToSun = Camera.main.transform.position.magnitude;
         for (int i = 0; i < spaceObjects.Length; i++)
         {
             Vector3 screenPos = Camera.main.WorldToScreenPoint(spaceObjects[i].transform.position);
             Vector2 canvasPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasMain.GetComponent<RectTransform>(), screenPos, null, out canvasPos);
 
-            if (screenPos.z > 0 && Settings.ShowLabels)
+            if (screenPos.z > 0 && Settings.ShowLabels && spaceObjects[i].transform.position.magnitude < cameraDistanceToSun)
             {
                 labels[i].SetActive(true);
                 labels[i].GetComponent<RectTransform>().anchoredPosition = canvasPos;
@@ -298,8 +312,6 @@ public class Game : MonoBehaviour
         }
         simulationTime += Time.deltaTime * Settings.TimeScale;
         textTime.text = CalculateTime();
-
-
     }
 
 }

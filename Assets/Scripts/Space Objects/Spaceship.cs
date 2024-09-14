@@ -11,6 +11,7 @@ public class Spaceship : MonoBehaviour
     private GameObject currentDestination;
     private bool reachedDestination;
     private float speed = 16900;        // in m/s
+    private decimal currentDestinationDistance;
 
     public GameObject Destination1 { get => destination1; set => destination1 = value; }
     public GameObject Destination2 { get => destination2; set => destination2 = value; }
@@ -80,6 +81,25 @@ public class Spaceship : MonoBehaviour
                 }
                 currentDestination = Destination1;
             }
+            currentDestinationDistance = SquaredMagnitude(currentDestination.transform.position, transform.position);
         }
+    }
+
+    // Unity gives us only float, but we need higher precision
+    private decimal SquaredMagnitude(Vector3 point1, Vector3 point2)
+    {
+        return ((decimal)point1.x-(decimal)point2.x) * ((decimal)point1.x - (decimal)point2.x) +
+            ((decimal)point1.y - (decimal)point2.y) * ((decimal)point1.y - (decimal)point2.y) +
+            ((decimal)point1.z - (decimal)point2.z) * ((decimal)point1.z - (decimal)point2.z);
+    }
+
+    public string GetProgress()
+    {
+        if (currentDestination == null)
+            return "";
+
+        decimal currentDistance = SquaredMagnitude(currentDestination.transform.position, transform.position);
+        decimal progress = (1 - (currentDistance / currentDestinationDistance))*100;
+        return progress.ToString("0.00000000000000000000");
     }
 }

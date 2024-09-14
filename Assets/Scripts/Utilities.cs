@@ -16,7 +16,7 @@ public static class Utilities
     {
         return units * KM_PER_WORLDSPACE_UNIT;
     }
-
+    
     public static Transform[] FindChildren(this Transform transform, string name)
     {
         return transform.GetComponentsInChildren<Transform>().Where(t => t.name == name).ToArray();

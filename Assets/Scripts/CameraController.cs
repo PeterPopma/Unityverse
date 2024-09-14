@@ -3,11 +3,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class GameInput : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
     CinemachineVirtualCamera vcamMainCamera;
 
-    [SerializeField] TextMeshProUGUI textMessage;
+    [SerializeField] TextMeshProUGUI textDistance;
     [SerializeField] private float moveByKeySpeed = 4f; 
     [SerializeField] private float lookSpeed = 2f;
     [SerializeField] private float zoomSpeed = 2f;
@@ -27,6 +27,7 @@ public class GameInput : MonoBehaviour
     private bool buttonCameraLookAround;
     private bool buttonCameraRollLeft;
     private bool buttonCameraRollRight;
+    private bool spaceshipView;
     private Vector2 look;
     private float timeMovingStarted;
 
@@ -50,6 +51,11 @@ public class GameInput : MonoBehaviour
     private void OnInfoScreen()
     {
         Game.Instance.ShowInfoScreen();
+    }
+
+    private void OnSpaceshipView(InputValue value)
+    {
+        spaceshipView = value.isPressed;
     }
 
     public void ChangeFollowObject(GameObject followObject)
@@ -125,9 +131,17 @@ public class GameInput : MonoBehaviour
     {
         vcamMainCamera.transform.eulerAngles = new Vector3(cameraPitch, cameraYaw, cameraRoll);
 
+
         if (Game.Instance.CameraFollowObject == null)
         {
             vcamMainCamera.transform.position = cameraPosition;
+        }
+        else if (spaceshipView)
+        {
+            // special view to see the spaceship circle around earth
+            Vector3 direction = (Game.Instance.SpaceShip.transform.position-Game.Instance.Earth.transform.position).normalized;
+            vcamMainCamera.transform.position = Game.Instance.SpaceShip.transform.position + direction * 0.015f;
+            vcamMainCamera.transform.LookAt(Game.Instance.SpaceShip.transform.position);
         }
         else if (!LockOnObject)
         {
@@ -141,7 +155,7 @@ public class GameInput : MonoBehaviour
 
     private void Update()
     {
-        textMessage.text = "camera-sun distance: " + string.Format("{0:0}", Utilities.WorldspaceUnitsToKM(Camera.main.transform.position.magnitude));
+        textDistance.text = "sun distance: " + string.Format("{0:0}", Utilities.WorldspaceUnitsToKM(Camera.main.transform.position.magnitude));
         float moveSpeed = moveByKeySpeed * Mathf.Pow(2, (Time.time - timeMovingStarted));
 
         if (buttonCameraRollLeft)
