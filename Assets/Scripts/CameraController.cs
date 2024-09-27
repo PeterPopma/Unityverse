@@ -30,9 +30,12 @@ public class CameraController : MonoBehaviour
     private bool spaceshipView;
     private Vector2 look;
     private float timeMovingStarted;
+    private float moveSpeed;
+    private bool movingCamera;
 
     public Vector3 CameraPosition { get => cameraPosition; set => cameraPosition = value; }
     public bool LockOnObject { get => lockOnObject; set => lockOnObject = value; }
+    public float MoveSpeed { get => moveSpeed; set => moveSpeed = value; }
 
     public void Awake()
     {
@@ -69,39 +72,53 @@ public class CameraController : MonoBehaviour
         Game.Instance.CameraFollowObject = followObject;
     }
 
+    private void UpdateCameraMoveStatus(bool isMoving)
+    {
+        if (isMoving)
+        {
+            timeMovingStarted = Time.time;
+            movingCamera = true;
+        }
+        else
+        {
+            movingCamera = false;
+            moveSpeed = 0;
+        }
+    }
+
     private void OnCameraForward(InputValue value)
     {
-        timeMovingStarted = Time.time;
+        UpdateCameraMoveStatus(value.isPressed);
         buttonCameraForward = value.isPressed;
     }
 
     private void OnCameraBack(InputValue value)
     {
-        timeMovingStarted = Time.time;
+        UpdateCameraMoveStatus(value.isPressed);
         buttonCameraBack = value.isPressed;
     }
 
     private void OnCameraLeft(InputValue value)
     {
-        timeMovingStarted = Time.time;
+        UpdateCameraMoveStatus(value.isPressed);
         buttonCameraLeft = value.isPressed;
     }
 
     private void OnCameraRight(InputValue value)
     {
-        timeMovingStarted = Time.time;
+        UpdateCameraMoveStatus(value.isPressed);
         buttonCameraRight = value.isPressed;
     }
 
     private void OnCameraUp(InputValue value)
     {
-        timeMovingStarted = Time.time;
+        UpdateCameraMoveStatus(value.isPressed);
         buttonCameraUp = value.isPressed;
     }
 
     private void OnCameraDown(InputValue value)
     {
-        timeMovingStarted = Time.time;
+        UpdateCameraMoveStatus(value.isPressed);
         buttonCameraDown = value.isPressed;
     }
 
@@ -156,7 +173,11 @@ public class CameraController : MonoBehaviour
     private void Update()
     {
         textDistance.text = "sun distance: " + string.Format("{0:0}", Utilities.WorldspaceUnitsToKM(Camera.main.transform.position.magnitude));
-        float moveSpeed = moveByKeySpeed * Mathf.Pow(2, (Time.time - timeMovingStarted));
+
+        if (movingCamera)
+        {
+            moveSpeed = moveByKeySpeed * Mathf.Pow(2, (Time.time - timeMovingStarted));
+        }
 
         if (buttonCameraRollLeft)
         {
@@ -166,6 +187,7 @@ public class CameraController : MonoBehaviour
         {
             cameraRoll += Time.deltaTime * 80;
         }
+        Debug.Log(cameraDistance);
         if (buttonCameraForward)
         {
             if (LockOnObject)

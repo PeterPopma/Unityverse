@@ -34,6 +34,8 @@ public class Spaceship : MonoBehaviour
 
         if (currentDestination != null)
         {
+            Vector3 direction = currentDestination.transform.position - transform.position;
+            transform.rotation = Quaternion.LookRotation(direction);
             if (reachedDestination)
             {
                 // circle destination object at 3 times its radius
@@ -41,12 +43,9 @@ public class Spaceship : MonoBehaviour
                 float kmTravelled = 365 * 24 * 60 * 60 * Settings.TimeScale * Time.time * Speed;
                 float currentAngle = kmTravelled / (2 * Mathf.PI * currentDestination.GetComponent<SpaceObject>().Radius);
                 transform.position = currentDestination.transform.position + new Vector3(radius * Mathf.Sin(currentAngle), 0, radius * Mathf.Cos(currentAngle));
-                Vector3 direction = currentDestination.transform.position - transform.position;
-                transform.rotation = Quaternion.LookRotation(direction);
             }
             else
             {
-                Vector3 direction = currentDestination.transform.position - transform.position;
                 float distanceToDestination = direction.magnitude - currentDestination.GetComponent<SpaceObject>().MeshRadius * 2;
                 float worldSpaceUnitsToTravel = 365 * 24 * 60 * 60 * Settings.TimeScale * Time.deltaTime * Speed / Utilities.KM_PER_WORLDSPACE_UNIT;
 
@@ -58,7 +57,6 @@ public class Spaceship : MonoBehaviour
 
                 // move to the new location
                 transform.position += direction.normalized * worldSpaceUnitsToTravel;
-                transform.rotation = Quaternion.LookRotation(direction);
             }
         }
     }

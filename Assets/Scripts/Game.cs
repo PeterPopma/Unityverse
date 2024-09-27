@@ -22,6 +22,7 @@ public class Game : MonoBehaviour
     [SerializeField] TextMeshProUGUI textMessage;
     [SerializeField] TextMeshProUGUI buttonPlayText;
     [SerializeField] TextMeshProUGUI textTime;
+    [SerializeField] TextMeshProUGUI textCameraSpeed;    
     [SerializeField] Toggle toggleCameraFollow;
     [SerializeField] Toggle toggleCameraLockOnObject;
     [SerializeField] Toggle toggleLights;
@@ -32,6 +33,7 @@ public class Game : MonoBehaviour
     [SerializeField] GameObject[] spaceObjects;
     [SerializeField] GameObject poles;
     [SerializeField] GameObject pfLabel;
+    [SerializeField] GameObject milkyway;
     [SerializeField] Spaceship spaceShip;
     [SerializeField] Earth earth;
     [SerializeField] CameraController cameraController;
@@ -69,7 +71,12 @@ public class Game : MonoBehaviour
             dropdownSpaceshipDestination1.options.Add(new TMP_Dropdown.OptionData() { text = spaceObject.name });
             dropdownSpaceshipDestination2.options.Add(new TMP_Dropdown.OptionData() { text = spaceObject.name });
             GameObject newLabel = Instantiate(pfLabel);
-            newLabel.GetComponent<TextMeshProUGUI>().SetText(spaceObject.name);
+            string name = spaceObject.name;
+            if (name == "Edge of Milky Way")
+            {
+                name = "";
+            }
+            newLabel.GetComponent<TextMeshProUGUI>().SetText(name);
             newLabel.transform.SetParent(canvasMain.transform, false);
             labels.Add(newLabel);
         }
@@ -284,6 +291,14 @@ public class Game : MonoBehaviour
     public void FixedUpdate()
     {
         textMessage.text = "spaceship: " + spaceShip.GetProgress() + "%";
+        if (cameraController.MoveSpeed > 0)
+        {
+            textCameraSpeed.text = "camera speed: " + cameraController.MoveSpeed.ToString("0");
+        }
+        else
+        {
+            textCameraSpeed.text = "";
+        }
     }
 
     public void Update()
@@ -295,7 +310,7 @@ public class Game : MonoBehaviour
             Vector2 canvasPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasMain.GetComponent<RectTransform>(), screenPos, null, out canvasPos);
 
-            if (screenPos.z > 0 && Settings.ShowLabels && spaceObjects[i].transform.position.magnitude < cameraDistanceToSun)
+            if (screenPos.z > 0 && Settings.ShowLabels && spaceObjects[i].transform.position.magnitude * 0.7f < cameraDistanceToSun)
             {
                 labels[i].SetActive(true);
                 labels[i].GetComponent<RectTransform>().anchoredPosition = canvasPos;
@@ -304,6 +319,23 @@ public class Game : MonoBehaviour
             {
                 labels[i].SetActive(false);
             }
+            if (spaceObjects[i].transform.position.magnitude * 0.5f < cameraDistanceToSun)
+            {
+                spaceObjects[i].SetActive(true);
+            }
+            else
+            {
+                spaceObjects[i].SetActive(false);
+            }
+        }
+
+        if (cameraDistanceToSun > 200000000000)
+        {
+            milkyway.SetActive(true);
+        }
+        else
+        {
+            milkyway.SetActive(false);
         }
 
         if (!Playing)

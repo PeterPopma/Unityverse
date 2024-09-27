@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class Utilities
 {
-    public const float KM_PER_WORLDSPACE_UNIT = 1000000f; //2785400f;
+    public const float KM_PER_WORLDSPACE_UNIT = 1000000f;
 
     public static float KmToWorldspaceUnits(float km)
     {
